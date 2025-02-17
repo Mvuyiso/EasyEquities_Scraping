@@ -53,7 +53,8 @@ def convert_to_float(value: str) -> float:
 def show_profit_loss(client: EasyEquitiesClient, account_id: str = None) -> None:
     """Show profit/loss for holdings in all accounts or a specific account"""
     accounts = client.accounts.list()
-    
+
+
     for account in accounts:
         print(f"\n# {account.name}")
         # Go through each holding
@@ -65,7 +66,10 @@ def show_profit_loss(client: EasyEquitiesClient, account_id: str = None) -> None
             total_profit_loss = 0
             total_investment = 0
 
-            for holding in holdings:
+            # Sort holdings alphabetically by name
+            sorted_holdings = sorted(holdings, key=lambda holding: holding['name'].lower())
+
+            for holding in sorted_holdings:
                 try:
                     print(f"- {holding['name']}: ", end='')
                     currency = holding['purchase_value'][0]
@@ -87,10 +91,11 @@ def show_profit_loss(client: EasyEquitiesClient, account_id: str = None) -> None
                     symbol = '+' if profit_loss >= 0 else '-'
                     colour = colorama.Fore.GREEN if profit_loss >= 0 else colorama.Fore.RED
 
+
                     str_profit_loss = (
                         f"{symbol}{currency}{abs(profit_loss):.2f} ({profit_loss_perc:.2f}%)"
                     )
-                    print(colour + str_profit_loss)
+                    print(f"Valuation: {currency}{current_value:.2f}, ", colour + str_profit_loss)
                 except Exception as e:
                     print(f"Error processing holding: {str(e)}")
                     print(f"Raw holding data: {holding}")
@@ -100,7 +105,7 @@ def show_profit_loss(client: EasyEquitiesClient, account_id: str = None) -> None
                 total_perc = (total_profit_loss / total_investment) * 100
                 total_color = colorama.Fore.GREEN if total_profit_loss >= 0 else colorama.Fore.RED
                 print(f"\nTotal for {account.name}: ", end='')
-                print(total_color + f"{'+' if total_profit_loss >= 0 else '-'}R{abs(total_profit_loss):.2f} ({total_perc:.2f}%)")
+                print(total_color + f"{'+' if total_profit_loss >= 0 else '-'}{currency}{abs(total_profit_loss):.2f} ({total_perc:.2f}%)")
             print()
         except Exception as e:
             print(f"Error fetching holdings for account {account.name}: {e}\n")
