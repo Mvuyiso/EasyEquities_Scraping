@@ -1,184 +1,107 @@
-# Easy Equities and Satrix Python Client
+# Easy Equities Investment Dashboard
 
-Unofficial Python client for [Easy Equities](easyequities.io/) and 
-[Satrix](satrix.co.za/). **Intended for personal use.**
-
-Supports Python 3.6+.
-
-[Pypi](https://pypi.org/project/easy-equities-client/)
-
-
-## Installation
-
-```
-pip install easy-equities-client
-```
+A web application for tracking and visualizing your Easy Equities investments.
 
 ## Features
 
-Accounts:
-- Get accounts for a user: `client.accounts.list()`
-- Get account holdings: `client.accounts.holdings(account.id)`
-- Get account valuations: `client.accounts.valuations(account.id)`
-- Get account transactions: `client.accounts.transactions(account.id)`
+- View all your Easy Equities accounts in one place
+- Track your investment holdings and their performance
+- Analyze profit and loss across your portfolio
+- View transaction history
+- Interactive stock charts with TradingView integration
+- Responsive design for desktop and mobile
 
-Instruments:
-- Get the historical prices for an instrument: 
-  `client.instruments.historical_prices('EQU.ZA.SYGJP', Period.ONE_MONTH)`
+## Project Structure
+
+The project consists of two main parts:
+
+1. **Frontend**: React application with Material UI
+2. **Backend**: Django REST API that interfaces with the Easy Equities client library
+
+## Prerequisites
+
+- Python 3.8+
+- Node.js 14+
+- npm or yarn
+- Easy Equities account credentials
+
+## Setup
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Mvuyiso/EasyEquities_Scraping.git
+cd easy-equities-web
+```
+
+### 2. Set up environment variables
+
+Create a `.env` file in the root directory with your Easy Equities credentials:
+
+```
+EASYEQUITIES_USERNAME=your_username
+EASYEQUITIES_PASSWORD=your_password
+```
+
+### 3. Backend Setup
+
+```bash
+# Navigate to the backend directory
+cd backend-django
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install the Easy Equities client library
+pip install -e ../..
+
+# Run migrations
+python manage.py migrate
+
+# Start the Django development server
+python manage.py runserver
+```
+
+### 4. Frontend Setup
+
+```bash
+# Navigate to the frontend directory
+cd ../frontend
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm start
+```
 
 ## Usage
 
-```python
-from easy_equities_client.clients import EasyEquitiesClient # or SatrixClient
+1. Open your browser and navigate to `http://localhost:3000`
+2. The application will automatically connect to your Easy Equities account
+3. Navigate through the different sections using the sidebar menu
 
-client = EasyEquitiesClient()
-client.login(username='your username', password='your password')
+## API Endpoints
 
-# List accounts
-accounts = client.accounts.list()
-"""
-[
-    Account(id='12345', name='EasyEquities ZAR', trading_currency_id='2'),
-    Account(id='12346', name='TFSA', trading_currency_id='3'),
-    ...
-]
-"""
+The backend provides the following API endpoints:
 
-# Get account holdings
-holdings = client.accounts.holdings(accounts[0].id)
-"""
-[
-    {
-        "name": "CoreShares Global DivTrax ETF",
-        "contract_code": "EQU.ZA.GLODIV",
-        "purchase_value": "R2 000.00",
-        "current_value": "R3 000.00",
-        "current_price": "R15.50",
-        "img": "https://resources.easyequities.co.za/logos/EQU.ZA.GLODIV.png",
-        "view_url": "/AccountOverview/GetInstrumentDetailAction/?IsinCode=ZAE000254249",
-        "isin": "ZAE000254249"
-    },
-    ...
-]
-"""
-# Optionally include number of shares for each holding (creates another API call for each holding)
-holdings = client.accounts.holdings(accounts[0].id, include_shares=True)
-"""
-[
-    {
-        "name": "CoreShares Global DivTrax ETF",
-        "contract_code": "EQU.ZA.GLODIV",
-        "purchase_value": "R2 000.00",
-        "current_value": "R3 000.00",
-        "current_price": "R15.50",
-        "img": "https://resources.easyequities.co.za/logos/EQU.ZA.GLODIV.png",
-        "view_url": "/AccountOverview/GetInstrumentDetailAction/?IsinCode=ZAE000254249",
-        "isin": "ZAE000254249",
-        "shares": "200.123"
-    },
-    ...
-]
-"""
+- `GET /api/accounts/` - List all accounts
+- `GET /api/dashboard/:account_id/` - Get dashboard data for an account
+- `GET /api/holdings/:account_id/` - Get holdings for an account
+- `GET /api/transactions/:account_id/` - Get transactions for an account
+- `GET /api/profit-loss/:account_id/` - Get profit/loss data for an account
+- `GET /api/all-holdings/` - Get all holdings across all accounts
+- `GET /api/historical-prices/:contract_code/:period/` - Get historical prices for an instrument
 
-# Get account valuations
-valuations = client.accounts.valuations(accounts[0].id)
-"""
-{
-    "TopSummary": {
-        "AccountValue": 300000.50,
-        "AccountCurrency": "ZAR",
-        "AccountNumber": "EE123456-111111",
-        "AccountName": "EasyEquities ZAR",
-        "PeriodMovements": [
-            {
-                "ValueMoveLabel": "Profit & Loss Value",
-                "ValueMove": "R5 000.00",
-                "PercentageMoveLabel": "Profit & Loss",
-                "PercentageMove": "15.00%",
-                "PeriodMoveHeader": "Movement on Current Holdings:"
-            }
-        ]
-    },
-    "NetInterestOnCashItems": [
-        {
-            "Label": "Total Interest on Free Cash",
-            "Value": "R10.55"
-        },
-        ...
-    ],
-    "AccrualSummaryItems": [
-        {
-            "Label": "Net Accrual",
-            "Value": "R2.00"
-        },
-        ...
-    ],
-    ...
-}
-"""
+## License
 
-# Get account transactions
-transactions = client.accounts.transactions(accounts[0].id)
-"""
-[
-    {
-        "TransactionId": 0,
-        "DebitCredit": 200.00,
-        "Comment": "Account Balance Carried Forward",
-        "TransactionDate": "2020-07-21T01:00:00",
-        "LogId": 123456789,
-        "ActionId": 0,
-        "Action": "Account Balance Carried Forward",
-        "ContractCode": ""
-    },
-        {
-        "TransactionId": 0,
-        "DebitCredit": 50.00,
-        "Comment": "CoreShares Global DivTrax ETF-Foreign Dividends @15.00",
-        "TransactionDate": "2020-11-19T14:30:00",
-        "LogId": 123456790,
-        "ActionId": 122,
-        "Action": "Foreign Dividend",
-        "ContractCode": "EQU.ZA.GLODIV"
-    },
-    ...
-]
-"""
-
-# Get historical data for an equity/instrument
-from easy_equities_client.instruments.types import Period
-historical_prices = client.instruments.historical_prices('EQU.ZA.SYGJP', Period.ONE_MONTH)
-"""
-{
-    "chartData": {
-        "Dataset": [
-            41.97,
-            42.37,
-            ...
-        ],
-        "Labels": [
-            "25 Jun 21",
-            "28 Jun 21",
-            ...
-        ],
-        "TradingCurrencySymbol": "R",
-        ...
-    }
-}
-"""
-```
-
-## Example Use Cases
-
-### Show holdings total profits/losses
-
-Run a script to show your holdings and their total profits/losses, e.g.  
-[show_holdings_profit_loss.py](https://github.com/delenamalan/easy-equities-client/blob/master/examples/show_holdings_profit_loss.py).
-
-![show_holdings_profit_loss.py example output](https://raw.githubusercontent.com/delenamalan/easy-equities-client/master/examples/show_holdings_profit_loss_example.png)
-
-
-
-## Contributing
-
-See [Contributing](./CONTRIBUTING.md)
+This project is licensed under the MIT License - see the LICENSE file for details.
