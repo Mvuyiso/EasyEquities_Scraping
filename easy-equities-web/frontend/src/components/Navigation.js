@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
 import { 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Drawer, 
-  List, 
-  ListItem, 
-  ListItemIcon, 
+  NavLink,
+  useLocation 
+} from 'react-router-dom';
+import axios from 'axios';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
   ListItemText,
   Divider,
   IconButton,
@@ -17,16 +21,15 @@ import {
   Select,
   MenuItem
 } from '@mui/material';
-import { 
+import {
   Dashboard as DashboardIcon,
-  AccountBalance as AccountsIcon,
+  AccountBalance as AccountBalanceIcon,
   ShowChart as HoldingsIcon,
   Receipt as TransactionsIcon,
-  TrendingUp as ProfitLossIcon,
+  AttachMoney as ProfitLossIcon,
   BarChart as StockChartsIcon,
   Menu as MenuIcon
 } from '@mui/icons-material';
-import axios from 'axios';
 
 const drawerWidth = 240;
 
@@ -34,24 +37,26 @@ function Navigation({ selectedAccount, setSelectedAccount }) {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [accounts, setAccounts] = useState([]);
-
-  useEffect(() => {
-    // Fetch accounts when component mounts
-    const fetchAccounts = async () => {
-      try {
-        const response = await axios.get('/api/accounts/');
+useEffect(() => {
+  const fetchAccounts = async () => {
+    try {
+      const response = await axios.get('/api/accounts/');
+      if (response.status === 200) {
         setAccounts(response.data);
-        // Set first account as default if none selected
         if (response.data.length > 0 && !selectedAccount) {
           setSelectedAccount(response.data[0]);
         }
-      } catch (error) {
-        console.error('Error fetching accounts:', error);
       }
-    };
+    } catch (error) {
+      console.error('Accounts load failed:', error);
+      if (error.response) {
+        console.error('Server responded with:', error.response.data);
+      }
+    }
+  };
 
-    fetchAccounts();
-  }, [selectedAccount, setSelectedAccount]);
+  fetchAccounts();
+}, [selectedAccount, setSelectedAccount]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -65,11 +70,11 @@ function Navigation({ selectedAccount, setSelectedAccount }) {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-    { text: 'Accounts', icon: <AccountsIcon />, path: '/accounts' },
+    { text: 'Accounts', icon: <AccountBalanceIcon />, path: '/accounts' },
     { text: 'Holdings', icon: <HoldingsIcon />, path: '/holdings' },
     { text: 'Transactions', icon: <TransactionsIcon />, path: '/transactions' },
     { text: 'Profit/Loss', icon: <ProfitLossIcon />, path: '/profit-loss' },
-    { text: 'Stock Charts', icon: <StockChartsIcon />, path: '/stock-charts' },
+    { text: 'Stock Charts', icon: <StockChartsIcon />, path: '/stock-charts' }
   ];
 
   const drawer = (
@@ -82,10 +87,10 @@ function Navigation({ selectedAccount, setSelectedAccount }) {
       <Divider />
       <List>
         {menuItems.map((item) => (
-          <ListItem 
-            button 
-            key={item.text} 
-            component={Link} 
+          <ListItem
+            button
+            key={item.text}
+            component={NavLink}
             to={item.path}
             selected={location.pathname === item.path}
           >
@@ -143,11 +148,11 @@ function Navigation({ selectedAccount, setSelectedAccount }) {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile
+            keepMounted: true
           }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
           }}
         >
           {drawer}
@@ -156,7 +161,7 @@ function Navigation({ selectedAccount, setSelectedAccount }) {
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
           }}
           open
         >

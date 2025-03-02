@@ -235,7 +235,8 @@ def historical_prices(request, contract_code, period):
     """Get historical prices for an instrument"""
     try:
         client = get_client()
-        
+
+
         # Convert period string to Period enum
         try:
             period_enum = Period[period.upper()]
@@ -244,7 +245,7 @@ def historical_prices(request, contract_code, period):
                 {'error': f'Invalid period. Choose from: {", ".join(p.name for p in Period)}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         # Get historical prices
         prices = client.instruments.historical_prices(contract_code, period_enum)
         return Response(prices)
